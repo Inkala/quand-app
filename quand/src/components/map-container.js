@@ -28,7 +28,7 @@ class MapContainer extends Component {
 
   render() {
     const style = {
-      width: '100vw',
+      width: '100%',
       height: '100vh'
     }
 
@@ -37,26 +37,30 @@ class MapContainer extends Component {
     }
 
     return (
-      <div>
-        <SearchForm
-          google={this.props.google}
-          onPlaceSelected={this.onPlaceSelected}
+      <div className="row">
+        <div className="col-md-4 left-nav">
+          <SearchForm
+            google={this.props.google}
+            onPlaceSelected={this.onPlaceSelected}
           />
-        <Map
-          google={this.props.google}
-          style={style}
-          initialCenter={{
-            lat: 41.399017,
-            lng: 2.166240
-          }}
-          zoom={14}
-          onReady={this.fetchPlaces}
-          onClick={this.onMapClicked}
-        >
-          {this.renderSelectePlace()}
-          <InfoWindow onClose={this.onInfoWindowClose}>
-          </InfoWindow>
-        </Map>
+        </div>
+        <div className="col-md-8 map-view">
+          <Map
+            google={this.props.google}
+            style={style}
+            initialCenter={{
+              lat: 41.399017,
+              lng: 2.166240
+            }}
+            zoom={14}
+            onReady={this.fetchPlaces}
+            onClick={this.onMapClicked}
+          >
+            {this.renderSelectePlace()}
+            <InfoWindow onClose={this.onInfoWindowClose}>
+            </InfoWindow>
+          </Map>
+        </div>
       </div>
     )
   }
