@@ -1,0 +1,76 @@
+html, body {
+  /* font-weight: 300; */
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+hr {
+  background: #D0D7D9;
+  height: 1px;
+  margin-top: 15px !important;
+  margin-bottom: 5px !important;
+  border: none;
+}
+
+/* General App */
+
+.App {
+  font-weight: 300;
+  height: 100%;
+  position: relative;
+}
+
+.top-nav {
+  background-color: #454545;
+  width: 100%;
+}
+
+.top-nav img {
+  width: 235px;
+  margin: 8px;
+}
+
+/* Left Nav */
+
+.left-nav {
+  background-color: #cfcfcf;
+  height: 100vh;
+}
+
+/* Search Form */
+
+.search-form {
+  padding: 20px 5px;
+}
+
+.search-form h2 {
+  color: #147999;
+  font-size: 1rem;
+  font-weight: 300;
+}
+
+.search-form input {
+  font-size: 0.8em;
+  font-weight: 100;
+  margin: 15px 0;
+}
+
+.drop-down {
+  margin-bottom: 2px;
+}
+
+/*  Map View */
+
+.map-view {
+  height: 100%;
+  padding: 0 !important;
+}
+
+#map-view {
+  bottom:0px;
+  height: 100%;
+  left: 0px;
+  position: absolute;
+  right: 0px;
+}
