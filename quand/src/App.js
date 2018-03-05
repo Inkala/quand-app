@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-
 import './App.css';
+
 // import ResultsList from './components/results-list';
 import MapContainer from './components/map-container';
 import logo from './img/quand-logo.png';
@@ -15,15 +15,12 @@ class App extends Component {
             <img src={logo} alt="Quando logo" />
           </div>
         </div>
-        <MapContainer />
+        <MapContainer
+        
+        />
       </div>
     );
   }
 }
 
 export default App;
-
-// <SearchForm />
-// <ResultsList />
-// <script async defer
-// AIzaSyAGaBSySyhmv8w1TXxgQO9hx6ZgOPWZsZE

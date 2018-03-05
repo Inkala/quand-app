@@ -1,72 +1,91 @@
-import React, { Component } from 'react';
-import {Map, InfoWindow, Marker, GoogleApiWrapper} from 'google-maps-react';
-import SearchForm from './search-form';
+/* eslint-disable no-undef */
+// import React, { Component } from 'react';
+import React from 'react';
+import _ from 'lodash'
+import { compose, withProps, lifecycle } from "recompose"
+import { withScriptjs, withGoogleMap, GoogleMap, Marker } from "react-google-maps"
+import { SearchBox } from 'react-google-maps/lib/components/places/SearchBox';
 
-class MapContainer extends Component {
+const MapContainer = compose(
+  withProps({
+    googleMapURL: "https://maps.googleapis.com/maps/api/js?key=AIzaSyAGaBSySyhmv8w1TXxgQO9hx6ZgOPWZsZE&v=3.exp&libraries=geometry,drawing,places",
+    loadingElement: <div style={{ height: `100%` }} />,
+    containerElement: <div style={{ height: `100vh` }}/>,
+    mapElement: <div style={{ height: `100%` }} />,
+  }),
+  lifecycle({
+    componentWillMount() {
+      const refs = {}
 
-  state = {
-    selectedPlace: undefined
-  }
+      this.setState({
+        bounds: null,
+        center: {lat: 41.404082, lng: 2.175017},
+        markers: [],
+        onMapMounted: ref => {
+          refs.map = ref;
+        },
+        onBoundsChanged: () => {
+          this.setState({
+            bounds: refs.map.getBounds(),
+            center: refs.map.getCenter(),
+          })
+        },
+        onSearchBoxMounted: ref => {
+          console.log('THIS IS REF: ', ref)
+          refs.searchBox = ref;
+        },
+        onPlacesChanged: () => {
+          const places = refs.searchBox.getPlaces();
+          const bounds = new google.maps.LatLngBounds();
 
-  onPlaceSelected = (place) => {
-    console.log(place);
-    this.setState({
-      selectedPlace: place
-    })
-  }
+          places.forEach(place => {
+            if (place.geometry.viewport) {
+              bounds.union(place.geometry.viewport)
+            } else {
+              bounds.extend(place.geometry.location)
+            }
+          });
+          const nextMarkers = places.map(place => ({
+            position: place.geometry.location,
+          }));
+          const nextCenter = _.get(nextMarkers, '0.position', this.state.center);
 
-  renderSelectePlace() {
-    return this.state.selectedPlace
-      ? <Marker onClick={this.onMarkerClick} name={'Current location'}
-        position={{
-          lat:this.state.selectedPlace.geometry.location.lat(),
-          lng:this.state.selectedPlace.geometry.location.lng()
-        }}
-       />
-      : null
-  }
+          this.setState({
+            center: nextCenter,
+            markers: nextMarkers,
+          });
+          // refs.map.fitBounds(bounds);
+        },
+      })
+    },
+  }),
+  withScriptjs,
+  withGoogleMap
+)((props) =>
+  <GoogleMap
+    containerElement={<div class="map-view" />}
+    ref={props.onMapMounted}
+    defaultZoom={15}
+    center={props.center}
+    onBoundsChanged={props.onBoundsChanged}
+  >
+    <SearchBox
+    containerElement={<div class="left-nav" />}
+    ref={props.onSearchBoxMounted}
+    bounds={props.bounds}
+    controlPosition={google.maps.ControlPosition.TOP_LEFT}
+    onPlacesChanged={props.onPlacesChanged}
+    >
+    <input
+    type="text"
+    placeholder="search for a place"
+    />
+    </SearchBox>
+    {props.markers.map((marker, index) =>
+      <Marker key={index} position={marker.position} />
+    )}
+  </GoogleMap>
+  )
 
-  render() {
-    const style = {
-      width: '100%',
-      height: '100vh'
-    }
 
-    if (!this.props.loaded) {
-      return <div>Loading...</div>
-    }
-
-    return (
-      <div className="row">
-        <div className="col-md-4 left-nav">
-          <SearchForm
-            google={this.props.google}
-            onPlaceSelected={this.onPlaceSelected}
-          />
-        </div>
-        <div className="col-md-8 map-view">
-          <Map
-            google={this.props.google}
-            style={style}
-            initialCenter={{
-              lat: 41.399017,
-              lng: 2.166240
-            }}
-            zoom={14}
-            onReady={this.fetchPlaces}
-            onClick={this.onMapClicked}
-          >
-            {this.renderSelectePlace()}
-            <InfoWindow onClose={this.onInfoWindowClose}>
-            </InfoWindow>
-          </Map>
-        </div>
-      </div>
-    )
-  }
-}
-
-export default GoogleApiWrapper({
-  apiKey: 'AIzaSyAGaBSySyhmv8w1TXxgQO9hx6ZgOPWZsZE',
-  libraries: ['places']
-})(MapContainer)
+export default MapContainer;
