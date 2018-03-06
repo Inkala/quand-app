@@ -1,82 +1,69 @@
-// import React, { Component } from 'react';
-// import { compose, with props, lifecycle } from 'recompose';
-// import { withScriptjs } from 'react-google-maps';
-// import { SearchBox } from 'react-google-maps/lib/components/places/SearchBox';
-//
+/* eslint-disable no-undef */
+import React, { Component } from 'react';
+import { withScriptjs } from "react-google-maps";
+import _ from 'lodash';
+import { StandaloneSearchBox } from 'react-google-maps/lib/components/places/StandaloneSearchBox';
 
-// const SearchForm = compose(
-//   withProps({
-//
-//   })
-// )
-//
-//   state = {
-//     newSearch: "",
-//     markers: []
-//   }
-//
-//   handleSearch = (term) => this.setState({
-//       newSearch: term.target.value
-//   }, () => this.searchBox.textSearch({query: this.state.newSearch}, (res, stat) => {
-//     // console.log('here', stat)
-//     if (stat === this.props.google.maps.places.PlacesServiceStatus.OK) {
-//       // console.log(res)
-//       this.props.onPlaceSelected(res);
-//     }
-//   }));
-//
-//   componentWillReceiveProps(nextProps) {
-//     // this.searchBox.setBounds(nextProps.bounds);
-//   }
-//
-//   componentDidMount(){
-//     this.searchBox = new this.props.google.maps.places.PlacesService(this.props.map);
-//     // console.log(this.searchBox)
-//     // this.searchBox.addListener('places_changed', () => {
-//     //   var places = this.searchBox.getPlaces();
-//     //   if (places.length == 0) {
-//     //     return;
-//     //   }
-//     //textSearch
-//     //   this.props.onPlaceSelected(places);
-//     //
-//     //   // markers.forEach(marker => {
-//     //   //   marker.setMap(null);
-//     //   // });
-//     //   // markers = [];
-//     //   //
-//     //   // markers.push(new window.google.maps.Marker({
-//     //   //   map: map,
-//     //   //   title: place.name,
-//     //   //   position: place.geometry.location
-//     //   // }));
-//     // });
-//   }
-//
-//
-//   render() {
-//     return (
-//       <div className="search-form">
-//         <h2>What are you looking for?</h2>
-//         <input
-//           type="text"
-//           className="form-control"
-//           placeholder="search for a place"
-//           onChange={this.handleSearch}
-//           value={this.state.newSearch}
-//           ref="search"
-//         />
-//         <button className="btn btn-info" onClick={this.createEvent}>Search</button>
-//         <hr/>
-//         <span>Options <i className="fas fa-sort-down drop-down"></i></span>
-//       </div>
-//     )
-//   }
-// }
-//
-// export default GoogleApiWrapper({
-//   apiKey: 'AIzaSyAGaBSySyhmv8w1TXxgQO9hx6ZgOPWZsZE',
-//   libraries: ['places']
-// })(SearchForm)
-//
-// // <span>Time <i class="fas fa-sort-down"></i></span>
+class SearchForm extends Component {
+  constructor (props) {
+    super(props);
+    this.state = {
+      markers: [],
+    };
+  }
+
+  componentWillMount() {
+    const refs = {}
+
+    this.setState({
+      markers: [],
+      onSearchBoxMounted: ref => {
+        refs.searchBox = ref;
+      },
+      onPlacesChanged: () => {
+        const places = refs.searchBox.getPlaces();
+        const bounds = new google.maps.LatLngBounds();
+
+        places.forEach(place => {
+          if (place.geometry.viewport) {
+            bounds.union(place.geometry.viewport)
+          } else {
+            bounds.extend(place.geometry.location)
+          }
+        });
+        const nextMarkers = places.map(place => ({
+          position: place.geometry.location,
+        }));
+        const nextCenter = _.get(nextMarkers, '0.position', this.state.center);
+
+        this.setState({
+          center: nextCenter,
+          markers: nextMarkers,
+        });
+        // refs.map.fitBounds(bounds);
+      },
+    })
+  }
+
+  render () {
+    return (
+      <div className="search-form" data-standalone-searchbox="">
+        <h2>What are you looking for?</h2>
+        <StandaloneSearchBox
+          containerElement={<div class="search-form" />}
+          ref={this.props.onSearchBoxMounted}
+          bounds={this.props.bounds}
+          onPlacesChanged={this.props.onPlacesChanged}
+        >
+          <input
+          type="text"
+          className="form-control"
+          placeholder="search for a place"
+          />
+        </StandaloneSearchBox>
+      </div>
+    );
+  }
+}
+
+export default withScriptjs(SearchForm);
